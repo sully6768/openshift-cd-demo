@@ -41,6 +41,11 @@ parameters:
   generate: expression
   name: SONAR_POSTGRESQL_PASSWORD
   required: true
+- description: Kubernetes Master URL
+  displayName: Kubernetes Master URL 
+  name: KUBERNETES_MASTER
+  value: url
+  required: true
 objects:
 # Pipeline
 - apiVersion: v1
@@ -143,7 +148,7 @@ objects:
           - name: JENKINS_PASSWORD
             value: ${JENKINS_PASSWORD}
           - name: KUBERNETES_MASTER
-            value: https://kubernetes.default:443
+            value: ${KUBERNETES_MASTER} 
           - name: KUBERNETES_TRUST_CERTIFICATES
             value: "true"
           - name: JNLP_SERVICE_NAME
@@ -176,9 +181,7 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         volumes:
-        - emptyDir:
-            medium: ""
-          name: jenkins-data
+        - name: jenkins-data
     triggers:
     - imageChangeParams:
         automatic: true
@@ -343,8 +346,9 @@ objects:
         restartPolicy: Always
         terminationGracePeriodSeconds: 30
         volumes:
-        - emptyDir: {}
-          name: nexus-data
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus-pvc
     triggers:
     - type: ConfigChange
     - imageChangeParams:
@@ -561,8 +565,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - emptyDir: {}
-          name: postgresql-data
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-gogs-pvc
     triggers:
     - imageChangeParams:
         automatic: true
@@ -871,8 +876,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - emptyDir: {}
-          name: postgresql-data
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-sonar-pvc
     test: false
     triggers:
     - imageChangeParams:
